@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: automaintainer-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}
+      - QWEN_MODEL=${QWEN_MODEL:-qwen-plus}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
+      - DATABASE_URL=${DATABASE_URL:-sqlite+aiosqlite:///./automaintainer.db}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - HOST=0.0.0.0
+      - PORT=8000
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - SANDBOX_ENABLED=${SANDBOX_ENABLED:-true}
+      - SANDBOX_TIMEOUT=${SANDBOX_TIMEOUT:-30}
+    volumes:
+      - ./backend:/app
+      - automaintainer-data:/app/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - automaintainer-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: automaintainer-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - automaintainer-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  automaintainer-data:
+  redis-data:
+
+networks:
+  automaintainer-net:
+    driver: bridge
