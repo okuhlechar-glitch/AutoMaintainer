@@ -1,7 +1,22 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir *)"
+      "Bash(mkdir *)",
+      "Bash(npx *)",
+      "Agent(Explore)",
+      "Bash(npm install *)",
+      "Bash(pip install *)",
+      "Bash(npm run *)",
+      "Bash(python *)",
+      "Bash(sleep *)",
+      "Bash(curl *)",
+      "Bash(python3 *)",
+      "Bash(kill *)",
+      "Bash(wait)",
+      "Bash(rm *)",
+      "Bash(docker compose *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   },
   "$version": 4
