@@ -1,6 +1,8 @@
 import { PipelineRun, PipelineListItem } from '@/types';
 
-const API_BASE = '/api';
+// On Vercel: NEXT_PUBLIC_API_URL = "http://<oracle-ip>/api"
+// Locally/with nginx: defaults to "/api" (nginx proxies to backend)
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 async function fetchAPI<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
