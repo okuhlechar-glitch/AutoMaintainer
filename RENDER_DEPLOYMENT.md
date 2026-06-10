@@ -30,10 +30,12 @@ You'll configure this in Render's dashboard later:
    - **Name**: `automaintainer-backend`
    - **Branch**: `main`
    - **Root Directory**: `backend`
-   - **Runtime**: Python 3
+   - **Runtime**: Python 3.13
    - **Build Command**: `chmod +x render-build.sh && ./render-build.sh`
    - **Start Command**: `chmod +x render-start.sh && ./render-start.sh`
    - **Plan**: Free
+
+> Note: Render may default to Python 3.14 for the generic "Python 3" runtime. Use Python 3.13 to avoid `pydantic-core`/PyO3 build failures in this repo.
 5. Add Environment Variables:
    - Copy all variables from your `backend/.env.render` file (with actual values)
    - **Important**: Set `PORT` to `10000` (Render requires this)
