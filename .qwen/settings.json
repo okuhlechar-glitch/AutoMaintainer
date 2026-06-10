@@ -1,4 +1,193 @@
 {
+  "$version": 4,
+  "modelProviders": {
+    "openai": [
+      {
+        "id": "qwen3.6-plus",
+        "name": "[ModelStudio Standard] qwen3.6-plus",
+        "baseUrl": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+        "envKey": "DASHSCOPE_API_KEY",
+        "generationConfig": {
+          "extra_body": {
+            "enable_thinking": true
+          },
+          "contextWindowSize": 1000000
+        }
+      },
+      {
+        "id": "glm-5.1",
+        "name": "[ModelStudio Standard] glm-5.1",
+        "baseUrl": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+        "envKey": "DASHSCOPE_API_KEY",
+        "generationConfig": {
+          "extra_body": {
+            "enable_thinking": true
+          },
+          "contextWindowSize": 202752
+        }
+      },
+      {
+        "id": "deepseek-v4-pro",
+        "name": "[ModelStudio Standard] deepseek-v4-pro",
+        "baseUrl": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+        "envKey": "DASHSCOPE_API_KEY",
+        "generationConfig": {
+          "extra_body": {
+            "enable_thinking": true
+          },
+          "contextWindowSize": 1000000,
+          "modalities": {
+            "image": true,
+            "video": true
+          }
+        }
+      },
+      {
+        "id": "deepseek-v4-flash",
+        "name": "[ModelStudio Standard] deepseek-v4-flash",
+        "baseUrl": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+        "envKey": "DASHSCOPE_API_KEY",
+        "generationConfig": {
+          "contextWindowSize": 1000000
+        }
+      },
+      {
+        "id": "qwen3.5-plus",
+        "name": "[ModelStudio Coding Plan] qwen3.5-plus",
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
+        "envKey": "BAILIAN_CODING_PLAN_API_KEY",
+        "generationConfig": {
+          "extra_body": {
+            "enable_thinking": true
+          },
+          "contextWindowSize": 1000000,
+          "modalities": {
+            "image": true,
+            "video": true
+          }
+        }
+      },
+      {
+        "id": "qwen3.6-plus",
+        "name": "[ModelStudio Coding Plan] qwen3.6-plus",
+        "description": "Currently available to Pro subscribers only.",
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
+        "envKey": "BAILIAN_CODING_PLAN_API_KEY",
+        "generationConfig": {
+          "extra_body": {
+            "enable_thinking": true
+          },
+          "contextWindowSize": 1000000,
+          "modalities": {
+            "image": true,
+            "video": true
+          }
+        }
+      },
+      {
+        "id": "glm-5",
+        "name": "[ModelStudio Coding Plan] glm-5",
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
+        "envKey": "BAILIAN_CODING_PLAN_API_KEY",
+        "generationConfig": {
+          "extra_body": {
+            "enable_thinking": true
+          },
+          "contextWindowSize": 202752
+        }
+      },
+      {
+        "id": "kimi-k2.5",
+        "name": "[ModelStudio Coding Plan] kimi-k2.5",
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
+        "envKey": "BAILIAN_CODING_PLAN_API_KEY",
+        "generationConfig": {
+          "extra_body": {
+            "enable_thinking": true
+          },
+          "contextWindowSize": 262144,
+          "modalities": {
+            "image": true,
+            "video": true
+          }
+        }
+      },
+      {
+        "id": "MiniMax-M2.5",
+        "name": "[ModelStudio Coding Plan] MiniMax-M2.5",
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
+        "envKey": "BAILIAN_CODING_PLAN_API_KEY",
+        "generationConfig": {
+          "extra_body": {
+            "enable_thinking": true
+          },
+          "contextWindowSize": 196608
+        }
+      },
+      {
+        "id": "qwen3-coder-plus",
+        "name": "[ModelStudio Coding Plan] qwen3-coder-plus",
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
+        "envKey": "BAILIAN_CODING_PLAN_API_KEY",
+        "generationConfig": {
+          "contextWindowSize": 1000000
+        }
+      },
+      {
+        "id": "qwen3-coder-next",
+        "name": "[ModelStudio Coding Plan] qwen3-coder-next",
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
+        "envKey": "BAILIAN_CODING_PLAN_API_KEY",
+        "generationConfig": {
+          "contextWindowSize": 262144
+        }
+      },
+      {
+        "id": "qwen3-max-2026-01-23",
+        "name": "[ModelStudio Coding Plan] qwen3-max-2026-01-23",
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
+        "envKey": "BAILIAN_CODING_PLAN_API_KEY",
+        "generationConfig": {
+          "extra_body": {
+            "enable_thinking": true
+          },
+          "contextWindowSize": 262144
+        }
+      },
+      {
+        "id": "glm-4.7",
+        "name": "[ModelStudio Coding Plan] glm-4.7",
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
+        "envKey": "BAILIAN_CODING_PLAN_API_KEY",
+        "generationConfig": {
+          "extra_body": {
+            "enable_thinking": true
+          },
+          "contextWindowSize": 202752
+        }
+      },
+      {
+        "id": "qwen/qwen-2.5-coder-32b:free",
+        "name": "Qwen Coder Free",
+        "baseUrl": "https://openrouter.ai",
+        "envKey": "OPENROUTER_API_KEY"
+      },
+      {
+        "id": "meta-llama/llama-3.3-70b-instruct:free",
+        "name": "Llama 3.3 Free",
+        "baseUrl": "https://openrouter.ai",
+        "envKey": "OPENROUTER_API_KEY"
+      }
+    ]
+  },
+  "security": {
+    "auth": {
+      "selectedType": "openai"
+    }
+  },
+  "model": {
+    "name": "qwen3.6-plus"
+  },
   "permissions": {
     "allow": [
       "Bash(mkdir *)",
@@ -16,9 +205,17 @@
       "Bash(rm *)",
       "Bash(docker compose *)",
       "Bash(git add *)",
-      "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git commit *)"
     ]
   },
-  "$version": 4
+  "providerMetadata": {
+    "coding-plan": {
+      "version": "bc6494a8413d8b400790a1441bfc9c2a9085e9e67ccd8206bf31ad94f3c7d2c8",
+      "baseUrl": "https://coding.dashscope.aliyuncs.com/v1"
+    },
+    "alibabaStandard": {
+      "version": "d97cc827daf7d7898c07f1655cd42dd973f34c710136f89ebf626a416a16864a",
+      "baseUrl": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+    }
+  }
 }

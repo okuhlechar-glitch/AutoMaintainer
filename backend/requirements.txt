@@ -13,6 +13,8 @@ python-multipart==0.0.19
 sqlalchemy==2.0.36
 aiosqlite==0.20.0
 docker==7.1.0
+
+# Tree-sitter with pre-built binaries (if available)
 tree-sitter==0.23.2
 tree-sitter-python==0.23.6
 tree-sitter-javascript==0.23.1
