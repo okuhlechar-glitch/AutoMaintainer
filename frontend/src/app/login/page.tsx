@@ -15,10 +15,20 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!username.trim()) {
+      setError('Username is required');
+      return;
+    }
+    if (!password.trim()) {
+      setError('Password is required');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await login(username, password);
+      await login(username.trim(), password.trim());
       router.push('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');

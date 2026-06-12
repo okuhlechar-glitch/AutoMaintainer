@@ -97,6 +97,9 @@ import secrets as _secrets
 @app.post("/api/auth/login", dependencies=[Depends(public_endpoint)])
 async def login(request: LoginRequest):
     """Authenticate and receive a JWT access token."""
+    if not request.username.strip() or not request.password.strip():
+        raise HTTPException(status_code=400, detail="Username and password are required")
+
     if not settings.auth_enabled:
         token = create_access_token("anonymous")
         return {"access_token": token, "token_type": "bearer"}

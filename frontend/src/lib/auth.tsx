@@ -34,7 +34,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!res.ok) {
       const error = await res.json().catch(() => ({ detail: res.statusText }));
-      throw new Error(error.detail || `Login failed: ${res.status}`);
+      const detail = error.detail;
+      if (Array.isArray(detail)) {
+        const messages = detail.map((e: { msg?: string; message?: string }) => e.msg || e.message || '').filter(Boolean);
+        throw new Error(messages.join('; ') || `Login failed: ${res.status}`);
+      }
+      throw new Error(detail || `Login failed: ${res.status}`);
     }
 
     const data = await res.json();
