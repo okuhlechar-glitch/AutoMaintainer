@@ -48,9 +48,10 @@ class BaseAgent(ABC):
             thinking=thinking,
         )
 
-    async def analyze(self, prompt: str, context: str = "") -> Dict[str, Any]:
+    async def analyze(self, prompt: str, context: str = "", max_tokens: Optional[int] = None) -> Dict[str, Any]:
         full_prompt = f"{prompt}\n\n{context}" if context else prompt
         return await self.llm.structured_chat(
             system_prompt=self.system_prompt,
             user_prompt=full_prompt,
+            max_tokens=max_tokens,
         )

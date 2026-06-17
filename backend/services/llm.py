@@ -31,8 +31,9 @@ class LLMClient:
                 "model": self.model,
                 "messages": messages,
                 "temperature": temperature or self.config.temperature,
-                "max_tokens": max_tokens or self.config.max_tokens,
             }
+            if max_tokens is not None:
+                kwargs["max_tokens"] = max_tokens
             if response_format:
                 kwargs["response_format"] = response_format
 

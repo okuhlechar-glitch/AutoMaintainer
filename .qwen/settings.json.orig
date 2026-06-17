@@ -209,7 +209,8 @@
       "Bash(do *)",
       "Bash(break)",
       "Bash(done)",
-      "WebFetch(pypi.org)"
+      "WebFetch(pypi.org)",
+      "Bash(git push *)"
     ]
   },
   "providerMetadata": {
