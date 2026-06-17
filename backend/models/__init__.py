@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 
@@ -72,7 +72,7 @@ class AgentMessage(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     agent_role: AgentRole
     content: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     metadata: Dict[str, Any] = Field(default_factory=dict)
     thinking: Optional[str] = None
 
@@ -140,8 +140,8 @@ class PipelineRun(BaseModel):
     pr_url: Optional[str] = None
     pr_title: Optional[str] = None
     pr_body: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     error_message: Optional[str] = None
 
     def db_dump(self) -> dict[str, Any]:
@@ -165,7 +165,7 @@ class PipelineEvent(BaseModel):
     event_type: str
     agent_role: Optional[AgentRole] = None
     data: Dict[str, Any] = Field(default_factory=dict)
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class MemoryEntry(BaseModel):
@@ -174,5 +174,5 @@ class MemoryEntry(BaseModel):
     category: str  # pattern, convention, decision, lesson
     content: str
     metadata: Dict[str, Any] = Field(default_factory=dict)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     relevance_score: float = 1.0
