@@ -8,6 +8,7 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<void>;
+  githubLogin: () => void;
   logout: () => void;
 }
 
@@ -52,8 +53,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(TOKEN_KEY);
   }, []);
 
+  const githubLogin = useCallback(() => {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
+    window.location.href = `${apiBase}/auth/github`;
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ token, isAuthenticated: !!token, login, logout }}>
+    <AuthContext.Provider value={{ token, isAuthenticated: !!token, login, githubLogin, logout }}>
       {children}
     </AuthContext.Provider>
   );

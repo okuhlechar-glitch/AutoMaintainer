@@ -10,6 +10,7 @@ from api.routes import router, LoginRequest
 from core.auth import public_endpoint, create_access_token
 from core.config import get_settings
 from core.database import init_db, async_session
+from core.github_oauth import github_oauth_redirect, github_oauth_callback
 from services.memory import memory_service
 from services.orchestrator import orchestration_engine
 
@@ -113,6 +114,20 @@ async def login(request: LoginRequest):
 
     token = create_access_token(settings.admin_username)
     return {"access_token": token, "token_type": "bearer"}
+
+
+# ── GitHub OAuth endpoints (public — registered on app to bypass router-level auth) ──
+
+@app.get("/api/auth/github", dependencies=[Depends(public_endpoint)])
+async def github_login(request: Request):
+    """Redirect to GitHub OAuth authorize page."""
+    return await github_oauth_redirect(request)
+
+
+@app.get("/api/auth/github/callback", dependencies=[Depends(public_endpoint)])
+async def github_callback(request: Request):
+    """Handle GitHub OAuth callback — exchange code, create user, issue JWT."""
+    return await github_oauth_callback(request)
 
 
 # ── API router ─────────────────────────────────────────────────────────────

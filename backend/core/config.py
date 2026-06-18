@@ -39,6 +39,11 @@ class Settings(BaseSettings):
     github_token: str = ""
     github_webhook_secret: str = ""
 
+    # ── GitHub OAuth ───────────────────────────────────────────────────
+    github_oauth_client_id: str = ""
+    github_oauth_client_secret: str = ""
+    github_oauth_redirect_uri: str = ""
+
     # ── Infrastructure ─────────────────────────────────────────────────
     redis_url: str = "redis://localhost:6379/0"
     database_url: str = "sqlite+aiosqlite:///./automaintainer.db"

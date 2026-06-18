@@ -1,17 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { Lock, User, ArrowRight, AlertCircle } from 'lucide-react';
+import { Lock, User, ArrowRight, AlertCircle, Github } from 'lucide-react';
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, githubLogin } = useAuth();
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Show OAuth error from URL params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const oauthError = params.get('error');
+    if (oauthError) {
+      setError(oauthError);
+      // Clean up the URL
+      window.history.replaceState({}, '', '/login');
+    }
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -121,6 +132,20 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          <div className="flex items-center gap-3 my-6">
+            <div className="flex-1 h-px bg-am-border" />
+            <span className="text-xs text-am-muted">or</span>
+            <div className="flex-1 h-px bg-am-border" />
+          </div>
+
+          <button
+            onClick={githubLogin}
+            className="w-full py-2.5 rounded-lg bg-[#24292e] hover:bg-[#2f363d] text-white font-medium transition-all flex items-center justify-center gap-2"
+          >
+            <Github size={18} />
+            Sign in with GitHub
+          </button>
         </div>
 
         <p className="text-center text-xs text-am-muted mt-6">

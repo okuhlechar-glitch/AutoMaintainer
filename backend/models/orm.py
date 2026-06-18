@@ -96,3 +96,17 @@ def orm_to_memory(orm_row: MemoryORM) -> MemoryEntry:
         relevance_score=orm_row.relevance_score,
         created_at=orm_row.created_at,
     )
+
+
+# ── User persistence ────────────────────────────────────────────────────────
+
+class UserORM(Base):
+    __tablename__ = "users"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    github_id: Mapped[int] = mapped_column(Integer, nullable=False, unique=True, index=True)
+    github_username: Mapped[str] = mapped_column(String(256), nullable=False, index=True)
+    github_access_token: Mapped[str] = mapped_column(String(512), nullable=False)
+    avatar_url: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

@@ -11,8 +11,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Skip guard on the login page itself
-    if (pathname === '/login') {
+    // Skip guard on public pages
+    if (pathname === '/login' || pathname === '/auth/callback') {
       setReady(true);
       return;
     }
@@ -24,8 +24,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, pathname, router]);
 
-  // On login page, always render
-  if (pathname === '/login') {
+  // On public pages, always render
+  if (pathname === '/login' || pathname === '/auth/callback') {
     return <>{children}</>;
   }
 
