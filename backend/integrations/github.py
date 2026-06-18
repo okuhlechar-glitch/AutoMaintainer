@@ -1,6 +1,7 @@
 import httpx
 from typing import Dict, Any, Optional, List
 from core.config import get_settings
+import base64
 import logging
 
 logger = logging.getLogger(__name__)
@@ -150,7 +151,7 @@ class GitHubClient:
                 )
                 file_data: Dict[str, Any] = {
                     "path": path,
-                    "content": content,
+                    "content": base64.b64encode(content.encode("utf-8")).decode("utf-8"),
                     "message": message,
                     "branch": branch,
                 }
