@@ -166,4 +166,8 @@ export const api = {
   async healthCheck(): Promise<{ status: string }> {
     return fetchAPI('/health');
   },
+
+  async listUserRepos(): Promise<{ repos: { name: string; full_name: string; url: string; description: string; private: boolean }[] }> {
+    return fetchAPI('/repos');
+  },
 };

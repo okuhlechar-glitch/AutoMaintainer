@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/common/Toast';
-import { Rocket, Settings, Loader2, X, ExternalLink, Link as LinkIcon, CheckCircle } from 'lucide-react';
+import { Rocket, Settings, Loader2, X, ExternalLink, Link as LinkIcon, CheckCircle, Github } from 'lucide-react';
 
 interface Props {
   onPipelineStarted: () => void;
@@ -23,12 +23,24 @@ export default function QuickStartPanel({ onPipelineStarted }: Props) {
   const { toast } = useToast();
   const [issueUrlInput, setIssueUrlInput] = useState('');
   const [parsedUrl, setParsedUrl] = useState<{ repo_url: string; issue_number: number } | null>(null);
+  const [repos, setRepos] = useState<{ name: string; full_name: string; url: string; description: string; private: boolean }[]>([]);
+  const [reposLoading, setReposLoading] = useState(false);
   const [formData, setFormData] = useState({
     repo_url: '',
     issue_number: 1,
     issue_title: '',
     issue_body: '',
   });
+
+  useEffect(() => {
+    if (showCustom) {
+      setReposLoading(true);
+      api.listUserRepos()
+        .then((data) => setRepos(data.repos))
+        .catch(() => setRepos([]))
+        .finally(() => setReposLoading(false));
+    }
+  }, [showCustom]);
 
   const handleIssueUrlChange = (value: string) => {
     setIssueUrlInput(value);
@@ -168,16 +180,35 @@ export default function QuickStartPanel({ onPipelineStarted }: Props) {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5">
-                  Repository URL <span className="text-red-400">*</span>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5 flex items-center gap-1.5">
+                  <Github size={12} /> Repository <span className="text-red-400">*</span>
                 </label>
-                <input
-                  type="text"
-                  placeholder="https://github.com/owner/repo"
-                  value={formData.repo_url}
-                  onChange={(e) => { setFormData({ ...formData, repo_url: e.target.value }); setValidationErrors((prev) => { const n = {...prev}; delete n.repo_url; return n; }); }}
-                  className={`w-full px-4 py-2.5 bg-am-dark border rounded-lg text-white placeholder-am-muted text-sm focus:outline-none transition-colors ${validationErrors.repo_url ? 'border-red-500/50 focus:border-red-500' : 'border-am-border focus:border-am-accent'}`}
-                />
+                {reposLoading ? (
+                  <div className="w-full px-4 py-2.5 bg-am-dark border border-am-border rounded-lg text-am-muted text-sm flex items-center gap-2">
+                    <Loader2 size={14} className="animate-spin" /> Loading repos...
+                  </div>
+                ) : repos.length > 0 ? (
+                  <select
+                    value={formData.repo_url}
+                    onChange={(e) => { setFormData({ ...formData, repo_url: e.target.value }); setValidationErrors((prev) => { const n = {...prev}; delete n.repo_url; return n; }); }}
+                    className={`w-full px-4 py-2.5 bg-am-dark border rounded-lg text-white text-sm focus:outline-none transition-colors appearance-none cursor-pointer ${validationErrors.repo_url ? 'border-red-500/50 focus:border-red-500' : 'border-am-border focus:border-am-accent'}`}
+                  >
+                    <option value="">Select a repository...</option>
+                    {repos.map((repo) => (
+                      <option key={repo.url} value={repo.url}>
+                        {repo.full_name} {repo.private ? '(private)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="https://github.com/owner/repo"
+                    value={formData.repo_url}
+                    onChange={(e) => { setFormData({ ...formData, repo_url: e.target.value }); setValidationErrors((prev) => { const n = {...prev}; delete n.repo_url; return n; }); }}
+                    className={`w-full px-4 py-2.5 bg-am-dark border rounded-lg text-white placeholder-am-muted text-sm focus:outline-none transition-colors ${validationErrors.repo_url ? 'border-red-500/50 focus:border-red-500' : 'border-am-border focus:border-am-accent'}`}
+                  />
+                )}
                 {validationErrors.repo_url && <p className="text-red-400 text-xs mt-1">{validationErrors.repo_url}</p>}
               </div>
               <div className="grid grid-cols-2 gap-3">

@@ -26,6 +26,7 @@ class PipelineORM(Base):
     pr_url: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
     pr_title: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
     pr_body: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    github_token: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -53,6 +54,7 @@ def orm_to_pipeline(orm: PipelineORM) -> PipelineRun:
         "pr_url": orm.pr_url,
         "pr_title": orm.pr_title,
         "pr_body": orm.pr_body,
+        "github_token": orm.github_token,
         "created_at": orm.created_at,
         "updated_at": orm.updated_at,
         "error_message": orm.error_message,

@@ -140,6 +140,7 @@ class PipelineRun(BaseModel):
     pr_url: Optional[str] = None
     pr_title: Optional[str] = None
     pr_body: Optional[str] = None
+    github_token: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     error_message: Optional[str] = None
@@ -157,7 +158,14 @@ class PipelineRun(BaseModel):
         # Restore datetime objects for DateTime columns
         serialized["created_at"] = self.created_at
         serialized["updated_at"] = self.updated_at
+        # github_token is stored in a separate column, not in JSON
         return serialized
+
+    def api_dump(self) -> dict[str, Any]:
+        """Dump model for API responses — excludes sensitive fields."""
+        data = self.model_dump()
+        data.pop("github_token", None)
+        return _serialize_for_db(data)
 
 
 class PipelineEvent(BaseModel):

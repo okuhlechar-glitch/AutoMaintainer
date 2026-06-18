@@ -184,6 +184,7 @@ class OrchestrationEngine:
         issue_number: int,
         issue_title: str,
         issue_body: str = "",
+        github_token: Optional[str] = None,
     ) -> PipelineRun:
         # Check concurrency limit
         if len(self._running) >= get_settings().max_concurrent_pipelines:
@@ -197,6 +198,7 @@ class OrchestrationEngine:
             issue_url=issue_url,
             issue_number=issue_number,
             issue_title=issue_title,
+            github_token=github_token,
         )
         self._pipelines[pipeline.id] = pipeline
         await self._persist_pipeline(pipeline)
@@ -215,6 +217,7 @@ class OrchestrationEngine:
     async def _run_pipeline(self, pipeline: PipelineRun, issue_body: str):
         context: Dict[str, Any] = {"issue_body": issue_body}
         settings = get_settings()
+        token = pipeline.github_token
 
         async with self._semaphore:
             try:
@@ -228,10 +231,10 @@ class OrchestrationEngine:
 
                 try:
                     owner, repo = github_client.parse_repo_url(pipeline.repo_url)
-                    repo_info = await github_client.get_repo_info(owner, repo)
+                    repo_info = await github_client.get_repo_info(owner, repo, token=token)
                     context["repo_info"] = repo_info
 
-                    tree = await github_client.get_file_tree(owner, repo)
+                    tree = await github_client.get_file_tree(owner, repo, token=token)
                     file_tree = "\n".join([
                         f"{'📁 ' if t['type'] == 'tree' else '📄 '}{t['path']}"
                         for t in tree[:200]
@@ -269,7 +272,7 @@ class OrchestrationEngine:
                 try:
                     owner, repo = github_client.parse_repo_url(pipeline.repo_url)
                     for file_path in analysis.affected_files[:10]:
-                        content = await github_client.get_file_content(owner, repo, file_path)
+                        content = await github_client.get_file_content(owner, repo, file_path, token=token)
                         if content:
                             context["file_contents"][file_path] = content
                 except Exception as e:
@@ -467,7 +470,7 @@ class OrchestrationEngine:
                 if pipeline.id in self._running:
                     del self._running[pipeline.id]
 
-    async def approve_pipeline(self, pipeline_id: str) -> PipelineRun:
+    async def approve_pipeline(self, pipeline_id: str, github_token: Optional[str] = None) -> PipelineRun:
         pipeline = self._pipelines.get(pipeline_id)
         if not pipeline:
             raise ValueError(f"Pipeline {pipeline_id} not found")
@@ -483,21 +486,23 @@ class OrchestrationEngine:
         await self._persist_pipeline(pipeline)
 
         # Try to create PR on GitHub
+        token = github_token or pipeline.github_token
         try:
             owner, repo = github_client.parse_repo_url(pipeline.repo_url)
             branch_name = f"automaintainer/fix-{pipeline.issue_number}"
 
-            await github_client.create_branch(owner, repo, branch_name)
+            await github_client.create_branch(owner, repo, branch_name, token=token)
 
             files = {c.file_path: c.new_content for c in pipeline.code_changes}
             commit_msg = f"fix: resolve #{pipeline.issue_number} - {pipeline.issue_title}"
-            await github_client.commit_files(owner, repo, branch_name, commit_msg, files)
+            await github_client.commit_files(owner, repo, branch_name, commit_msg, files, token=token)
 
             pr = await github_client.create_pull_request(
                 owner, repo,
                 title=pipeline.pr_title or f"Fix #{pipeline.issue_number}: {pipeline.issue_title}",
                 body=pipeline.pr_body or f"Automated fix for #{pipeline.issue_number}",
                 head=branch_name,
+                token=token,
             )
             pipeline.pr_url = pr.get("html_url", "")
             pipeline.status = PipelineStatus.MERGED

@@ -4,11 +4,16 @@ import logging
 from typing import List, Optional
 from urllib.parse import urlparse
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field, field_validator
+from sqlalchemy import select
 
 from core.auth import public_endpoint, require_api_key
+from core.config import get_settings
+from core.database import async_session
+from integrations.github import github_client
 from models import MemoryEntry, PipelineRun, PipelineStatus
+from models.orm import UserORM
 from services.llm import llm_registry
 from services.memory import memory_service
 from services.orchestrator import orchestration_engine
@@ -17,6 +22,21 @@ logger = logging.getLogger(__name__)
 
 # Auth-protected router (all routes except those using public_endpoint)
 router = APIRouter(dependencies=[Depends(require_api_key)])
+
+
+async def _resolve_user_token(auth_info: dict) -> Optional[str]:
+    """Look up the authenticated user's GitHub OAuth token from the database."""
+    username = auth_info.get("user")
+    if username in ("anonymous", "api_client", None):
+        return None
+
+    async with async_session() as session:
+        result = await session.execute(
+            select(UserORM.github_access_token).where(UserORM.github_username == username)
+        )
+        user_token = result.scalar_one_or_none()
+
+    return user_token
 
 
 # ── Request models ─────────────────────────────────────────────────────────
@@ -97,8 +117,10 @@ class DemoPipelineRequest(BaseModel):
 # ── Pipeline endpoints ─────────────────────────────────────────────────────
 
 @router.post("/pipelines/start", status_code=201)
-async def start_pipeline(request: StartPipelineRequest):
+async def start_pipeline(request: StartPipelineRequest, auth_info: dict = Depends(require_api_key)):
     """Start a new pipeline for an issue."""
+    # Resolve per-user GitHub token
+    github_token = await _resolve_user_token(auth_info)
     try:
         pipeline = await orchestration_engine.start_pipeline(
             repo_url=request.repo_url,
@@ -106,6 +128,7 @@ async def start_pipeline(request: StartPipelineRequest):
             issue_number=request.issue_number,
             issue_title=request.issue_title,
             issue_body=request.issue_body,
+            github_token=github_token,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -113,8 +136,9 @@ async def start_pipeline(request: StartPipelineRequest):
 
 
 @router.post("/pipelines/demo", status_code=201)
-async def start_demo_pipeline(request: DemoPipelineRequest):
+async def start_demo_pipeline(request: DemoPipelineRequest, auth_info: dict = Depends(require_api_key)):
     """Start a demo pipeline (no GitHub token required)."""
+    github_token = await _resolve_user_token(auth_info)
     try:
         pipeline = await orchestration_engine.start_pipeline(
             repo_url=request.repo_url,
@@ -122,6 +146,7 @@ async def start_demo_pipeline(request: DemoPipelineRequest):
             issue_number=request.issue_number,
             issue_title=request.issue_title,
             issue_body=request.issue_body,
+            github_token=github_token,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -163,14 +188,15 @@ async def get_pipeline(pipeline_id: str):
     pipeline = orchestration_engine.get_pipeline(pipeline_id)
     if not pipeline:
         raise HTTPException(status_code=404, detail="Pipeline not found")
-    return pipeline.model_dump()
+    return pipeline.api_dump()
 
 
 @router.post("/pipelines/{pipeline_id}/approve")
-async def approve_pipeline(pipeline_id: str, request: ApproveRequest | None = None):
+async def approve_pipeline(pipeline_id: str, request: ApproveRequest | None = None, auth_info: dict = Depends(require_api_key)):
     """Approve a pipeline awaiting human review."""
+    github_token = await _resolve_user_token(auth_info)
     try:
-        pipeline = await orchestration_engine.approve_pipeline(pipeline_id)
+        pipeline = await orchestration_engine.approve_pipeline(pipeline_id, github_token=github_token)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return {"status": pipeline.status.value, "pr_url": pipeline.pr_url}
@@ -198,19 +224,21 @@ async def delete_pipeline(pipeline_id: str):
 
 
 @router.post("/pipelines/{pipeline_id}/retry", status_code=201)
-async def retry_pipeline(pipeline_id: str):
+async def retry_pipeline(pipeline_id: str, auth_info: dict = Depends(require_api_key)):
     """Retry a failed pipeline by creating a new one with the same parameters."""
     pipeline = orchestration_engine.get_pipeline(pipeline_id)
     if not pipeline:
         raise HTTPException(status_code=404, detail="Pipeline not found")
     if pipeline.status.value not in ("failed", "rejected"):
         raise HTTPException(status_code=400, detail="Only failed or rejected pipelines can be retried")
+    github_token = await _resolve_user_token(auth_info)
     try:
         new_pipeline = await orchestration_engine.start_pipeline(
             repo_url=pipeline.repo_url,
             issue_url=pipeline.issue_url,
             issue_number=pipeline.issue_number,
             issue_title=pipeline.issue_title,
+            github_token=github_token,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -255,6 +283,19 @@ async def add_memory(request: MemoryRequest):
 async def list_models():
     """List configured LLM models."""
     return {"models": llm_registry.list_models()}
+
+
+@router.get("/repos")
+async def list_user_repos(auth_info: dict = Depends(require_api_key)):
+    """List GitHub repos the authenticated user has access to."""
+    user_token = await _resolve_user_token(auth_info)
+    if not user_token:
+        raise HTTPException(status_code=400, detail="No GitHub token available — sign in with GitHub first")
+    try:
+        repos = await github_client.list_user_repos(user_token)
+        return {"repos": [{"name": r["name"], "full_name": r["full_name"], "url": r["html_url"], "description": r.get("description", ""), "private": r.get("private", False)} for r in repos]}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to fetch repos: {e}")
 
 
 # ── System status ───────────────────────────────────────────────────────────
