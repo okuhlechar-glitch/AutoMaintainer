@@ -179,7 +179,7 @@ export default function SettingsPage() {
                       >
                         {availableModels.map((model) => (
                           <option key={model.alias} value={model.alias}>
-                            {model.alias} ({model.model.split('/').pop()})
+                            {model.alias} ({model.model})
                           </option>
                         ))}
                       </select>
@@ -194,7 +194,7 @@ export default function SettingsPage() {
                       {availableModels.map((model) => (
                         <span key={model.alias} className="text-xs px-2 py-1 bg-am-darker border border-am-border/50 rounded text-gray-400 font-mono">
                           {model.alias}
-                          <span className="text-am-muted ml-1">— {model.model.split('/').pop()}</span>
+                          <span className="text-am-muted ml-1">— {model.model}</span>
                         </span>
                       ))}
                     </div>
